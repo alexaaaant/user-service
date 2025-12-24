@@ -1,14 +1,22 @@
 package http
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
 
 func NewRouter(h *Handler) http.Handler {
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 
-	mux.HandleFunc("/users", h.CreateUser)
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	})
 
-	return mux
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/", h.CreateUser)
+		r.Get("/{id}", h.GetUser)
+	})
+
+	return r
 }
